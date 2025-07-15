@@ -57,6 +57,71 @@ void searchByTitle() {
             printf("%s (%d): %s\n", entries[i].author, entries[i].year, entries[i].title);
 }
 
+void searchByYear() {
+    int y;
+    printf("Enter year: "); scanf("%d", &y);
+    for (int i = 0; i < count; i++)
+        if (entries[i].year == y)
+            printf("%s (%d): %s\n", entries[i].author, entries[i].year, entries[i].title);
+}
+
+void searchByYearRange() {
+    int s, e;
+    printf("Start year: "); scanf("%d", &s);
+    printf("End year: "); scanf("%d", &e);
+    for (int i = 0; i < count; i++)
+        if (entries[i].year >= s && entries[i].year <= e)
+            printf("%s (%d): %s\n", entries[i].author, entries[i].year, entries[i].title);
+}
+
+void displayEntryTypes() {
+    int art = 0, tech = 0, proc = 0, misc = 0;
+    for (int i = 0; i < count; i++) {
+        if (strstr(entries[i].type, "article")) art++;
+        else if (strstr(entries[i].type, "tech")) tech++;
+        else if (strstr(entries[i].type, "inproceedings")) proc++;
+        else misc++;
+    }
+    printf("Articles: %d, Tech Reports: %d, Proceedings: %d, Misc: %d\n", art, tech, proc, misc);
+}
+
+int compareAuthors(const void* a, const void* b) {
+    return strcmp(((Entry*)a)->author, ((Entry*)b)->author);
+}
+
+void displayAuthorsSorted() {
+    qsort(entries, count, sizeof(Entry), compareAuthors);
+    for (int i = 0; i < count; i++)
+        printf("%s\n", entries[i].author);
+}
+
+void detectDuplicates() {
+    for (int i = 0; i < count; i++)
+        for (int j = i + 1; j < count; j++)
+            if (strcmp(entries[i].title, entries[j].title) == 0)
+                printf("Duplicate: \"%s\" by %s and %s\n", entries[i].title, entries[i].author, entries[j].author);
+}
+
+void displayUWEHarvard() {
+    int i;
+    printf("Entry number (0 to %d): ", count - 1);
+    scanf("%d", &i);
+    if (i >= 0 && i < count) {
+        printf("%s (%d). %s. %s. DOI: %s\n",
+               entries[i].author, entries[i].year, entries[i].title,
+               entries[i].journal, entries[i].doi);
+    } else {
+        printf("Invalid index.\n");
+    }
+}
+
+void checkMissingInfo() {
+    for (int i = 0; i < count; i++) {
+        if (strlen(entries[i].author) == 0 || strlen(entries[i].title) == 0 || entries[i].year == 0)
+            printf("Entry %d is missing data.\n", i);
+    }
+}
+
 void addEntry(const char* filename) {
     FILE* f = fopen(filename, "a");
     Entry e;
@@ -83,16 +148,25 @@ void menu(const char* filename) {
     int opt;
     do {
         printf("\n--- MENU ---\n");
-        printf("1. Search Author\n2. Search Title\n3. Add Entry\n4. Exit\nChoose: ");
+        printf("1. Search Author\n2. Search Title\n3. Search Year\n4. Year Range\n");
+        printf("5. Entry Types\n6. Sorted Authors\n7. Find Duplicates\n8. UWE Reference\n");
+        printf("9. Missing Info\n10. Add Entry\n11. Exit\nChoose: ");
         scanf("%d", &opt);
         switch (opt) {
             case 1: searchByAuthor(); break;
             case 2: searchByTitle(); break;
-            case 3: addEntry(filename); break;
-            case 4: printf("Goodbye!\n"); break;
+            case 3: searchByYear(); break;
+            case 4: searchByYearRange(); break;
+            case 5: displayEntryTypes(); break;
+            case 6: displayAuthorsSorted(); break;
+            case 7: detectDuplicates(); break;
+            case 8: displayUWEHarvard(); break;
+            case 9: checkMissingInfo(); break;
+            case 10: addEntry(filename); break;
+            case 11: printf("Goodbye!\n"); break;
             default: printf("Invalid.\n");
         }
-    } while (opt != 4);
+    } while (opt != 11);
 }
 
 int main() {
